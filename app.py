@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import pytz
 import os
 
 app = Flask(__name__)
@@ -9,9 +10,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'in
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# establece la zona horaria local
+local_timezone = pytz.timezone('America/Mexico_City')  # Ajusta según tu zona horaria
+
 class CrowdData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+#    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(local_timezone))
     cantidad = db.Column(db.String(80), nullable=False)
 
     def to_dict(self):
