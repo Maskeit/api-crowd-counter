@@ -59,7 +59,7 @@ mqtt_client = mqtt.Client()
 mqtt_client.on_message = on_message
 mqtt_client.connect("localhost", 1883, 60)
 mqtt_client.subscribe("crowd_data/eventos")
-#   mqtt_client.loop_start()
+#mqtt_client.loop_start()
 mqtt_client.loop_forever()
 
 @app.route("/data", methods=["GET"])
@@ -68,8 +68,16 @@ def get_all_data():
     return jsonify([item.to_dict() for item in data])
 
 if __name__ == '__main__':
+    # Crear el directorio 'instance' si no existe
     if not os.path.exists(os.path.join(basedir, 'instance')):
         os.makedirs(os.path.join(basedir, 'instance'))
+    
+    # Crear todas las tablas en la base de datos antes de iniciar la aplicación
     with app.app_context():
-        db.create_all()  # Crear todas las tablas
+        db.create_all()
+    
+    # Iniciar el bucle MQTT en un hilo de fondo para no bloquear Flask
+    mqtt_client.loop_start()
+    
+    # Iniciar el servidor Flask
     socketio.run(app, host="0.0.0.0", port=5000)
