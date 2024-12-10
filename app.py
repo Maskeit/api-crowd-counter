@@ -46,6 +46,7 @@ def on_message(client, userdata, msg):
     cantidad = msg.payload.decode()
     
     with app.app_context():  # Asegurar el contexto de la app
+        # Si no, almacenar los datos y emitirlos por websockets
         crowd_data = CrowdData(cantidad=cantidad)
         db.session.add(crowd_data)
         db.session.commit()
@@ -59,8 +60,8 @@ mqtt_client = mqtt.Client()
 mqtt_client.on_message = on_message
 mqtt_client.connect("localhost", 1883, 60)
 mqtt_client.subscribe("crowd_data/eventos")
-#mqtt_client.loop_start()
-mqtt_client.loop_forever()
+mqtt_client.loop_start()
+#mqtt_client.loop_forever()
 
 @app.route("/data", methods=["GET"])
 def get_all_data():
@@ -76,8 +77,12 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     
-    # Iniciar el bucle MQTT en un hilo de fondo para no bloquear Flask
+    # Iniciar el bucle MQTT en un hilo de fondo
     mqtt_client.loop_start()
+    # mqtt_client.loop_forever()
     
-    # Iniciar el servidor Flask
-    socketio.run(app, host="0.0.0.0", port=5000)
+    # Imprimir mensaje para confirmar inicio del servidor
+    print("Servidor Flask-SocketIO corriendo en http://0.0.0.0:5000")
+
+    # Iniciar el servidor Flask-SocketIO
+    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
