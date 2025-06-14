@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
@@ -67,6 +67,17 @@ mqtt_client.loop_start()
 def get_all_data():
     data = CrowdData.query.all()
     return jsonify([item.to_dict() for item in data])
+
+
+
+# Servir index.html y archivos estáticos desde la carpeta static/
+@app.route('/')
+def serve_index():
+    return send_from_directory('static', 'index.html')
+
+@app.route('/<path:path>')
+def serve_static_file(path):
+    return send_from_directory('static', path)
 
 if __name__ == '__main__':
     # Crear el directorio 'instance' si no existe
